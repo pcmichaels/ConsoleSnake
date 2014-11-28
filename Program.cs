@@ -26,7 +26,7 @@ namespace TestConsoleGame2
             while (true)
             {
                 if (AcceptInput() || UpdateGame())
-                    DrawScreen();                
+                    DrawScreen();
             }
         }
 
@@ -46,7 +46,10 @@ namespace TestConsoleGame2
                 };
             }
 
-            Move(_lastKey);
+            if (_lastKey.HasValue)
+            {
+                Move(_lastKey.Value);
+            }
 
             nextUpdate = DateTime.Now.AddMilliseconds(500);
             return true;
@@ -68,7 +71,7 @@ namespace TestConsoleGame2
             }
         }
 
-        static ConsoleKeyInfo _lastKey;
+        static ConsoleKeyInfo? _lastKey;
         private static bool AcceptInput()
         {
             if (!Console.KeyAvailable)
@@ -104,8 +107,38 @@ namespace TestConsoleGame2
 
             }
 
+            DetectCollision(currentPos);
+
             points.Add(currentPos);
             CleanUp();
+        }
+
+        private static void DetectCollision(Position currentPos)
+        {
+            // Check if we're off the screen
+            if (currentPos.top < 0 || currentPos.top > Console.WindowHeight
+                || currentPos.left < 0 || currentPos.left > Console.WindowWidth)
+            {
+                GameOver();
+            }
+
+            // Check if we've crashed into the tail
+            if (points.Any(p => p.left == currentPos.left && p.top == currentPos.top))
+            {
+                GameOver();
+            }
+
+            // Check if we've eaten the food
+            if (_foodPosition.left == currentPos.left && _foodPosition.top == currentPos.top)
+            {
+                _length++;
+                _foodPosition = null;
+            }
+        }
+
+        private static void GameOver()
+        {
+            throw new NotImplementedException();
         }
 
         private static Position GetStartPosition()
